@@ -1,0 +1,72 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  text-align: center;
+  width: 100%;
+  height: 4rem;
+  background-color: rgb(54, 189, 14);
+  padding-top: 1rem;
+  font-size: 2rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: white;
+}
+
+.form {
+  display: flex;
+  margin: 7rem 32rem;
+  align-items: center;
+  flex-direction: column;
+  width: 30%;
+  border: 1px solid black;
+  padding-left: 2rem;
+}
+
+.form input {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.input {
+  width: 90%;
+  border-radius: 5px;
+}
+
+.btn {
+  background-color: rgb(54, 189, 14);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.btn:hover {
+  background-color: rgb(69, 232, 20);
+}
+#registration-failed-or-successful {
+  text-align: center;
+  color: white;
+  /* background-color: rgb(54, 189, 14); */
+  width: 30%;
+  margin-bottom: 1rem;
+  padding: 10px 20px;
+  border-radius: 3px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+  display: none;
+}
+
+.warning {
+  background-color: rgb(247, 72, 72);
+}
+
+.success {
+  background-color: rgb(54, 189, 14);
+}

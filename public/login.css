@@ -1,0 +1,100 @@
+/* .signUpbtn {
+  background-color: rgb(54, 189, 14);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: black;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+} */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Arial", sans-serif; /* Improved font choice for readability */
+  background-color: #f4f4f4; /* Lighter background for better contrast */
+}
+
+header {
+  text-align: center;
+  width: 100%;
+  height: 60px; /* Adjusted for aesthetic balance */
+  background-color: rgb(54, 189, 14);
+  padding-top: 20px;
+  font-size: 24px;
+  color: #ffffff; /* Ensuring text is white for better visibility */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 5rem auto; /* Centering form in the page */
+  width: 360px; /* Fixed width for better control */
+  background: #fff; /* White background for the form */
+  padding: 20px;
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Adding shadow for 3D effect */
+}
+
+.input,
+.signUpbtn,
+#btn {
+  width: 90%; /* Full width inputs and buttons */
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: block; /* Ensures full width usage */
+  border: 1px solid #ccc; /* Subtle borders */
+  border-radius: 4px; /* Consistent rounded corners */
+  box-sizing: border-box; /* Border box sizing */
+}
+
+.signUpbtn,
+#btn {
+  background-color: rgb(54, 189, 14);
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block; /* Aligns button text properly */
+  transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.signUpbtn:hover,
+#btn:hover {
+  background-color: #3fa116; /* Slightly darker green on hover for interaction feedback */
+}
+
+.signUpbtn a {
+  color: inherit;
+  text-decoration: none;
+}
+
+p {
+  color: #666;
+  font-size: 1rem;
+}
+
+#error-element {
+  background-color: #f44336;
+  color: white;
+  border: 1px solid #d32f2f;
+  border-radius: 5px;
+  padding: 10px;
+  margin-left: 10rem;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%);
+  z-index: 1001;
+  display: none;
+}
+
+.input.warning {
+  border-color: rgb(244, 88, 119);
+}
+
+.warningforPassword {
+  border-color: rgb(244, 88, 119);
+}

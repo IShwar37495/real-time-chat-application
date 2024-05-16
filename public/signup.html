@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup</title>
+    <link rel="stylesheet" href="signup.css" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script src="/script/script.js" defer></script>
+  </head>
+  <body>
+    <header>CONNECTIFY</header>
+
+    <div class="form">
+      <h1>Registration Form</h1>
+      <div class="input">
+        <input
+          type="text"
+          class="input"
+          id="name"
+          placeholder="name"
+          maxlength="50"
+          required
+        />
+      </div>
+      <div class="input">
+        <input
+          type="email"
+          class="input"
+          id="email"
+          placeholder="email"
+          maxlength="50"
+          required
+          pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+          title="Please enter a valid email address"
+        />
+      </div>
+      <div class="input">
+        <input
+          type="password"
+          class="input"
+          id="password"
+          placeholder="password"
+          maxlength="50"
+          required
+        />
+      </div>
+      <div class="input">
+        <input
+          type="password"
+          class="input"
+          id="confirmPassword"
+          placeholder="Confirm password"
+          maxlength="50"
+          required
+        />
+      </div>
+      <button class="btn" id="btn">Sign up</button>
+      <div id="registration-failed-or-successful">registration</div>
+    </div>
+  </body>
+</html>

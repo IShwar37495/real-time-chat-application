@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup</title>
+    <link rel="stylesheet" href="login.css" />
+    <link rel="stylesheet" href="signup.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script src="/script/login.js" defer></script>
+  </head>
+  <body>
+    <header>CONNECTIFY</header>
+
+    <div class="form">
+      <h1>Login</h1>
+      <div class="input">
+        <input
+          type="email"
+          class="input"
+          id="usermail"
+          placeholder="email"
+          maxlength="50"
+          required
+        />
+      </div>
+
+      <div class="input">
+        <input
+          type="password"
+          class="input"
+          id="user-password"
+          placeholder="password"
+          maxlength="50"
+          required
+        />
+      </div>
+      <div id="error-element">iam error</div>
+
+      <button id="btn">Login</button>
+      <p><a href="http://www.google.com"> Forgot Password?</a></p>
+      <div>
+        <p>New here?</p>
+
+        <button class="signUpbtn" id="btn2">
+          <a href="signup.html">Signup</a>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
