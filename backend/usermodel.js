@@ -20,7 +20,7 @@ const userdetailSchema = new mongoose.Schema(
       required: true,
     },
     otp: {
-      type: Number,
+      type: String,
     },
 
     isLoggedIn: {

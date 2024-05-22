@@ -1,15 +1,17 @@
 const buttonElement = document.getElementById("btn");
+const loaderElement = document.getElementById("loader");
 
 async function submitData(e) {
+  e.preventDefault();
+
   const email = document.getElementById("usermail").value;
   const password = document.getElementById("user-password").value;
-
-  const data = {
-    email: email,
-    password: password,
-  };
+  const data = { email: email, password: password };
 
   try {
+    // Show the loader
+    loaderElement.classList.add("show");
+
     const response = await axios.post("http://localhost:5000/login", data);
     console.log("response", response.data);
 
@@ -20,15 +22,16 @@ async function submitData(e) {
       console.log(response.data.name);
     }
 
+    // Navigate to the new page
     window.location.href = response.data.redirectUrl;
   } catch (error) {
     console.error("error:", error.message);
 
     if (error.response && error.response.status === 400) {
       const errorMessageElement = document.getElementById("error-element");
-
       errorMessageElement.style.display = "block";
       errorMessageElement.innerText = "Incorrect email or password";
+
       const usermail = document.getElementById("usermail");
       const userPassword = document.getElementById("user-password");
 
@@ -48,6 +51,8 @@ async function submitData(e) {
         errorMessageElement.style.display = "none";
       }, 3000);
     }
+
+    loaderElement.classList.remove("show");
   }
 }
 

@@ -271,7 +271,6 @@ const socket = io();
 let selectedEmail;
 const loggedInUserEmail = sessionStorage.getItem("email");
 const loggedInUserName = sessionStorage.getItem("name");
-console.log(loggedInUserName);
 
 // Handle socket events
 socket.on("connect", () => {
@@ -302,11 +301,20 @@ closeButton.addEventListener("click", function () {
   searchSection.classList.remove("non-clickable");
 });
 
-socket.on("reply", (data) => {
+// When a new message is received
+socket.on("reply", async (data) => {
   if (data.fromEmail === selectedEmail) {
     appendMessage(data.message, "received");
   } else {
-    markConversationAsUpdated(data.fromEmail);
+    // Fetch the updated conversation partners and highlight the updated conversation
+    const response = await axios.get(
+      "http://localhost:5000/getConversationPartners",
+      {
+        params: { email: loggedInUserEmail },
+      }
+    );
+    const partners = response.data;
+    displayConversationPartners(partners, data.fromEmail);
   }
   messagesList.scrollTop = messagesList.scrollHeight;
 });
@@ -339,46 +347,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
-// function displayConversationPartners(partners) {
-//   partnersList.innerHTML = "";
-//   partners.forEach((partner) => {
-//     const partnerElement = document.createElement("li");
-//     partnerElement.className = "partner-item";
-//     partnerElement.setAttribute("data-email", partner.email);
-
-//     const messagePrefix =
-//       partner.lastMessage.sender === loggedInUserEmail ? "You: " : "";
-//     const messageContent = partner.lastMessage
-//       ? `${messagePrefix}${partner.lastMessage.message}`
-//       : "No messages yet";
-
-//     partnerElement.innerHTML = `
-//       <div><strong>${partner.name}</strong><p>${messageContent}</p></div>
-//       <div>${
-//         partner.unread ? "<span class='new-message'>New!</span>" : ""
-//       }</div>
-//     `;
-
-//     partnerElement.onclick = () => {
-//       selectedEmail = partner.email;
-//       userDetailsDiv.innerHTML = `<h2>${partner.name}</h2>`;
-//       messageArea.style.display = "block";
-//       loadMessages(partner.email, loggedInUserEmail);
-
-//       // Mark messages as read
-//       const newMessageSpan = partnerElement.querySelector(".new-message");
-//       if (newMessageSpan) {
-//         newMessageSpan.remove();
-//       }
-
-//       markMessagesAsRead(partner.email, loggedInUserEmail);
-//     };
-
-//     partnersList.appendChild(partnerElement);
-//   });
-// }
-
-function displayConversationPartners(partners) {
+// Updated displayConversationPartners function
+function displayConversationPartners(partners, highlightEmail = null) {
   partnersList.innerHTML = "";
   partners.forEach((partner) => {
     const partnerElement = document.createElement("li");
@@ -402,6 +372,10 @@ function displayConversationPartners(partners) {
       </div>
     `;
 
+    if (highlightEmail && partner.email === highlightEmail) {
+      partnerElement.classList.add("highlight");
+    }
+
     partnerElement.onclick = (e) => {
       if (e.target.classList.contains("delete-btn")) {
         e.stopPropagation();
@@ -413,6 +387,11 @@ function displayConversationPartners(partners) {
         messagesLoaded = 0;
         loadMessages(partner.email, loggedInUserEmail);
         markMessagesAsRead(partner.email, loggedInUserEmail);
+
+        const newMessageSpan = partnerElement.querySelector(".new-message");
+        if (newMessageSpan) {
+          newMessageSpan.remove();
+        }
       }
     };
 
@@ -561,3 +540,21 @@ sendButton.addEventListener("click", () => {
   appendMessage(message, "sent");
   messageInput.value = "";
 });
+
+const logoutButton = document.getElementById("logout-btn");
+
+async function logoutUser(e) {
+  const name = loggedInUserName;
+
+  console.log(name);
+
+  try {
+    const response = await axios.post("http://localhost:5000/logout", { name });
+
+    window.location.href = response.data.redirectUrl;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+logoutButton.addEventListener("click", logoutUser);

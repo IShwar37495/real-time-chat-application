@@ -128,33 +128,6 @@ app.delete("/deleteConversation", async (req, res) => {
   res.status(200).send("Conversation deleted");
 });
 
-// app.get("/getConversationPartners", async (req, res) => {
-//   const email = req.query.email;
-//   const user = await Userdetail.findOne({ email });
-//   if (!user) return res.status(404).send("User not found");
-
-//   const messages = await Messagedetail.find({
-//     $or: [{ sender: user._id }, { receiver: user._id }],
-//   })
-//     .populate("sender receiver")
-//     .sort({ createdAt: -1 });
-
-//   const partners = messages.map((msg) => {
-//     const otherUser = msg.sender._id.equals(user._id)
-//       ? msg.receiver
-//       : msg.sender;
-//     return {
-//       name: otherUser.name,
-//       email: otherUser.email,
-//       lastMessage: msg.message,
-//       unread: !msg.read && msg.receiver._id.equals(user._id), // Only consider unread if this user is the receiver
-//     };
-//   });
-
-// app.get("/getConversationPartners", async (req, res) => {
-// Existing implementation...
-// });
-
 app.get("/getConversationPartners", async (req, res) => {
   const email = req.query.email;
   const user = await Userdetail.findOne({ email });
@@ -538,32 +511,33 @@ app.get("/newPassword", async (req, res) => {
   res.sendFile(filePath);
 });
 
-app.get("/logout", verifyJWT, async (req, res) => {
-  const filePath = path.resolve(__dirname, "./public/logout.html");
+app.post("/logout", async (req, res) => {
+  const { name } = req.body;
 
-  res.sendFile(filePath);
-});
+  const user = await Userdetail.findOne({ name: name });
 
-app.post("/logout", verifyJWT, async (req, res) => {
-  if (!req.user) {
-    return res.status(400).json({ message: "user not found" });
+  if (!user) {
+    res.status(400).json({ message: "invalid access" });
+    return;
   }
 
   try {
     await Userdetail.updateOne(
       {
-        email: req.user.email,
+        name: name,
       },
       { $set: { isLoggedIn: false, accessToken: 1 } }
     );
 
-    res.status(200).json({ message: "logout successful" });
+    res
+      .status(200)
+      .json({ redirectUrl: "/login", message: "user logout successfully" });
   } catch (error) {
     res.status(500).json({ message: "an error occured" });
   }
 });
 
-app.post("/forgotPassword", verifyJWT, async (req, res) => {
+app.post("/forgotPassword", async (req, res) => {
   const { email } = req.body;
 
   const user = await Userdetail.findOne({ email: email });
@@ -574,17 +548,14 @@ app.post("/forgotPassword", verifyJWT, async (req, res) => {
 
   try {
     const otp = generateOtp();
-    // user.otp = otp;
     const updatedUser = await Userdetail.updateOne(
       { email: email },
       { otp: otp }
     );
-
     console.log(updatedUser);
-
     const info = await transporter.sendMail({
       from: '"ishwar" <ishwarmnd2000@gmail.com>',
-      to: "ishwarjhokhra2000@gmail.com",
+      to: email,
       subject: "Password Reset",
       text: `please enter ${otp} to verify your email`,
     });
@@ -626,7 +597,10 @@ app.post("/verifyOtp", async (req, res) => {
     user.otp = null;
     await user.save({ validateBeforeSave: false });
 
-    return res.status(200).json({ redirectUrl: "/newPassword" });
+    return res.status(200).json({
+      // redirectUrl: "/newPassword",
+      message: "otp verification successfull",
+    });
   } catch (error) {
     console.error("Error verifying OTP:", error);
     return res.status(500).json({ error: "Internal server error" });
@@ -634,16 +608,33 @@ app.post("/verifyOtp", async (req, res) => {
 });
 
 app.post("/newPassword", async (req, res) => {
-  const { password, confirmPassword } = req.body;
+  const { email, password, confirmPassword } = req.body;
+  if (!email) {
+    console.log("email not found");
+  }
+  console.log(email);
 
   if (password !== confirmPassword) {
+    return res.status(400).json({ message: "Passwords do not match" });
   }
 
-  const user = await Userdetail.findById(req.user._id);
+  try {
+    const user = await Userdetail.findOne({ email: email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  user.password = password;
+    user.password = password;
 
-  await Userdetail.save({ validateBeforeSave: false });
+    await user.save({ validateBeforeSave: false });
 
-  return res.status(201).json("password changed successfully");
+    return res.status(200).json({
+      message: "Password changed successfully",
+      redirectUrl: "/login",
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "An error occurred", error: error.message });
+  }
 });

@@ -14,6 +14,7 @@ body {
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 1rem;
+  height: calc(100vh-20px);
 }
 
 #main-section {
@@ -24,7 +25,19 @@ body {
 
 /* #search-section, */
 
+/* #chat-section {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+} */
+
 #chat-section {
+  flex: 1;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
   background-color: #fff;
   padding: 20px;
   border-radius: 8px;
@@ -46,6 +59,7 @@ body {
   padding: 10px;
   display: flex;
   flex-direction: column;
+  height: calc(100%-70px);
 }
 
 input,
@@ -77,6 +91,7 @@ button:hover {
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .outgoing {
@@ -122,15 +137,16 @@ button:hover {
   justify-content: center;
   text-align: center;
   position: fixed;
-  width: 80%;
-  height: 60%;
+  width: 50%;
+  height: 50%;
   top: 20%;
-  left: 10%;
+  left: 20%;
   display: none;
   border: 1px solid #ccc;
   padding: 20px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  background: #e0e0e0;
+  box-shadow: 10px 10px 16px #bebebe, -10px -10px 16px #ffffff;
   z-index: 1001;
   overflow: auto;
 }
@@ -179,11 +195,12 @@ button:hover {
   background-color: white;
   padding: 10px;
   border-top: 1px solid #ccc;
+  width: 100%;
 }
 
 #message-input {
   width: 80%;
-  position: sticky;
+  margin-right: 10px;
 }
 #send-btn {
   position: sticky;
@@ -240,6 +257,13 @@ button:hover {
   font-size: 1.2em;
 }
 
+#logout-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  margin-left: 1rem;
+}
+
 .delete-btn {
   background-color: red;
   color: white;
@@ -251,4 +275,28 @@ button:hover {
 
 .delete-btn:hover {
   background-color: darkred;
+}
+
+#suggestions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  position: absolute;
+  width: 100%;
+}
+
+#suggestions-list li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+#suggestions-list li:hover {
+  background-color: #f0f0f0;
 }
