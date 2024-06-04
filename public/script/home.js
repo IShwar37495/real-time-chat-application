@@ -263,6 +263,7 @@ const profileInfo = document.getElementById("profile-info");
 const mainSection = document.getElementById("main-section");
 const chatSection = document.getElementById("chat-section");
 const searchSection = document.getElementById("search-section");
+const fileInput = document.getElementById("file-input");
 
 // Setup the socket connection
 const socket = io();
@@ -304,7 +305,7 @@ closeButton.addEventListener("click", function () {
 // When a new message is received
 socket.on("reply", async (data) => {
   if (data.fromEmail === selectedEmail) {
-    appendMessage(data.message, "received");
+    appendMessage(data.message, "received", data.file);
   } else {
     // Fetch the updated conversation partners and highlight the updated conversation
     const response = await axios.get(
@@ -319,10 +320,56 @@ socket.on("reply", async (data) => {
   messagesList.scrollTop = messagesList.scrollHeight;
 });
 
-function appendMessage(message, type) {
+// function appendMessage(message, type, file=null) {
+//   const messageDiv = document.createElement("div");
+//   messageDiv.className = type === "sent" ? "outgoing" : "incoming";
+
+//   if(file){
+//     const fileLink=document.createElement("a");
+//     fileLink.href=file;
+//     fileLink.target="_blank";
+
+//     fileLink.textContent="View File";
+//     messageDiv.appendChild(fileLink);
+
+//     if (file.match(/\.(jpeg|jpg|gif|png)$/)) {
+//       const img = document.createElement("img");
+//        img.src = file;
+//        img.style.maxWidth = "200px";
+//        img.style.maxHeight = "200px";
+//        messageDiv.appendChild(img);
+
+//     }
+//   }
+//   messageDiv.textContent = message;
+//   messagesList.appendChild(messageDiv); // Append at the bottom
+//   messagesList.scrollTop = messagesList.scrollHeight; // Scroll to the bottom
+// }
+
+function appendMessage(message, type, file = null) {
   const messageDiv = document.createElement("div");
   messageDiv.className = type === "sent" ? "outgoing" : "incoming";
-  messageDiv.textContent = message;
+
+  if (file) {
+    const fileLink = document.createElement("a");
+    fileLink.href = file;
+    fileLink.target = "_blank";
+    fileLink.textContent = "View File";
+    messageDiv.appendChild(fileLink);
+
+    if (file.match(/\.(jpeg|jpg|gif|png|)$/)) {
+      const img = document.createElement("img");
+      img.src = file;
+      img.style.maxWidth = "200px";
+      img.style.maxHeight = "200px";
+      messageDiv.appendChild(img);
+    } else {
+      messageDiv.textContent = message;
+    }
+  } else {
+    messageDiv.textContent = message;
+  }
+
   messagesList.appendChild(messageDiv); // Append at the bottom
   messagesList.scrollTop = messagesList.scrollHeight; // Scroll to the bottom
 }
@@ -458,14 +505,38 @@ function markConversationAsUpdated(email) {
   }
 }
 
+// async function loadMessages(partnerEmail, userEmail) {
+//   const response = await axios.get("http://localhost:5000/getMessages", {
+//     params: { partnerEmail, userEmail },
+//   });
+//   messagesList.innerHTML = "";
+//   response.data.reverse().forEach((msg) => {
+//     appendMessage(msg.text, msg.sentByCurrentUser ? "sent" : "received");
+//   });
+// }
+
 async function loadMessages(partnerEmail, userEmail) {
-  const response = await axios.get("http://localhost:5000/getMessages", {
-    params: { partnerEmail, userEmail },
-  });
-  messagesList.innerHTML = "";
-  response.data.reverse().forEach((msg) => {
-    appendMessage(msg.text, msg.sentByCurrentUser ? "sent" : "received");
-  });
+  try {
+    const response = await axios.get("http://localhost:5000/getMessages", {
+      params: { partnerEmail, userEmail },
+    });
+    const messages = response.data;
+
+    messagesList.innerHTML = "";
+    messages.forEach((msg) => {
+      if (msg.file) {
+        appendMessage(
+          msg.text,
+          msg.sentByCurrentUser ? "sent" : "received",
+          msg.file
+        );
+      } else {
+        appendMessage(msg.text, msg.sentByCurrentUser ? "sent" : "received");
+      }
+    });
+  } catch (error) {
+    console.error("Failed to load messages:", error);
+  }
 }
 
 // User search
@@ -527,18 +598,63 @@ searchInput.addEventListener("input", async () => {
 });
 
 // Send message
-sendButton.addEventListener("click", () => {
+sendButton.addEventListener("click", async () => {
   const message = messageInput.value.trim();
-  if (!message) return;
+  const file = fileInput.files[0];
 
-  socket.emit("message", {
-    message: message,
-    selectedEmail: selectedEmail,
-    loggedInUser: loggedInUserEmail,
-  });
+  if (!message && !file) return;
 
-  appendMessage(message, "sent");
+  if (file) {
+    // Handle file upload
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const fileUrl = response.data.fileUrl;
+
+      // Emit message with file URL
+      socket.emit("message", {
+        message: message,
+        file: fileUrl,
+        selectedEmail: selectedEmail,
+        loggedInUser: loggedInUserEmail,
+      });
+
+      appendMessage(message || "File sent", "sent", fileUrl);
+      fileInput.value = "";
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  } else {
+    // Emit message without file
+    socket.emit("message", {
+      message: message,
+      selectedEmail: selectedEmail,
+      loggedInUser: loggedInUserEmail,
+    });
+
+    appendMessage(message, "sent");
+  }
+
   messageInput.value = "";
+});
+
+// Listen for file input change event to display the selected file
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0];
+  if (file) {
+    messageInput.value = file.name;
+  }
 });
 
 const logoutButton = document.getElementById("logout-btn");
@@ -558,3 +674,35 @@ async function logoutUser(e) {
 }
 
 logoutButton.addEventListener("click", logoutUser);
+
+// document
+//   .getElementById("file-input")
+//   .addEventListener("change", function (event) {
+//     const file = event.target.files[0];
+//     if (file) {
+//       const formData = new FormData();
+//       formData.append("file", file);
+
+//       axios
+//         .post("/upload", formData, {
+//           headers: {
+//             "Content-Type": "multipart/form-data",
+//           },
+//         })
+//         .then((response) => {
+//           const fileUrl = response.data.fileUrl;
+//           displayFileInChat(fileUrl);
+//         })
+//         .catch((error) => {
+//           console.error("Error uploading file:", error);
+//         });
+//     }
+//   });
+
+// function displayFileInChat(fileUrl) {
+//   const messagesList = document.getElementById("messages-list");
+//   const messageElement = document.createElement("li");
+//   messageElement.className = "outgoing"; // or 'incoming' based on who sent the file
+//   messageElement.innerHTML = `<a href="${fileUrl}" target="_blank">View File</a>`;
+//   messagesList.appendChild(messageElement);
+// }

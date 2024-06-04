@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+require("dotenv").config();
 
 const http = require("http");
 const server = http.createServer(app);
@@ -25,11 +26,65 @@ const Messagedetail = require(__dirname + "/backend/messagemodal");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const { listeners } = require("./backend/usermodel");
+const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Specify the destination folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Append the extension
+  },
+});
+
+const upload = multer({ storage });
+
+const uploadsDir = path.join(__dirname + "public/uploads");
 connectdb();
+
+const uploadOnCloudinary = async (localFilePath) => {
+  try {
+    if (!localFilePath) return null;
+
+    console.log(localFilePath);
+
+    //upload file
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto",
+    });
+    // file has been uploaded
+    // console.log("file is uploaded",  response.url);
+    // fs.unlinkSync(localFilePath);
+    return response;
+  } catch (error) {
+    console.log("filetype not supported");
+    return null;
+  }
+};
+
+app.use("/uploads", express.static(path.join(__dirname + "/public/uploads")));
 
 server.listen(5000, () => {
   console.log("server listening on port 5000");
+});
+
+app.post("/upload", upload.single("file"), async (req, res) => {
+  const localFilePath = req.file.path;
+  const uploadResult = await uploadOnCloudinary(localFilePath);
+  if (uploadResult) {
+    res.json({ fileUrl: uploadResult.secure_url });
+  } else {
+    res.status(500).send("Error uploading file");
+  }
 });
 
 const emailToSocketId = {};
@@ -53,7 +108,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("message", async (data) => {
-    const { message, selectedEmail, loggedInUser } = data;
+    const { message, selectedEmail, loggedInUser, file } = data;
     const sender = await Userdetail.findOne({ email: loggedInUser });
     const receiver = await Userdetail.findOne({ email: selectedEmail });
     if (sender && receiver) {
@@ -67,16 +122,27 @@ io.on("connection", (socket) => {
       if (previousMessage) {
         conversationId = previousMessage.conversationId;
       }
+
+      let fileUrl = null;
+      if (file) {
+        const result = await uploadOnCloudinary(file);
+
+        fileUrl = result.secure_url;
+
+        // fs.unlinkSync(file.path);
+      }
       const newMessage = new Messagedetail({
         sender: sender._id,
         receiver: receiver._id,
         conversationId,
         message,
+        file: fileUrl,
       });
       await newMessage.save();
 
       io.to(conversationId.toString()).emit("reply", {
         message,
+        file: fileUrl,
         fromEmail: sender.email,
         type: "received",
       });
@@ -85,6 +151,7 @@ io.on("connection", (socket) => {
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("reply", {
           message,
+          file: fileUrl,
           fromEmail: sender.email,
           type: "notification",
         });
@@ -212,13 +279,16 @@ app.get("/getMessages", async (req, res) => {
   if (!userEmail || !partnerEmail) {
     return res.status(400).send("Both user and partner emails are required");
   }
+
   const [user, partner] = await Promise.all([
     Userdetail.findOne({ email: userEmail }),
     Userdetail.findOne({ email: partnerEmail }),
   ]);
+
   if (!user || !partner) {
     return res.status(404).send("Users not found");
   }
+
   const messages = await Messagedetail.find({
     $or: [
       { sender: user._id, receiver: partner._id },
@@ -227,9 +297,11 @@ app.get("/getMessages", async (req, res) => {
   })
     .sort({ createdAt: -1 })
     .limit(20);
+
   res.json(
-    messages.map((msg) => ({
+    messages.reverse().map((msg) => ({
       text: msg.message,
+      file: msg.file,
       sentByCurrentUser: msg.sender.equals(user._id),
     }))
   );

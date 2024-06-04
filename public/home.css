@@ -14,7 +14,6 @@ body {
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 1rem;
-  height: calc(100vh-20px);
 }
 
 #main-section {
@@ -22,15 +21,6 @@ body {
   justify-content: space-between;
   padding: 20px;
 }
-
-/* #search-section, */
-
-/* #chat-section {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-} */
 
 #chat-section {
   flex: 1;
@@ -46,6 +36,14 @@ body {
 
 #search-section {
   width: 350px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #search-btn {
@@ -59,7 +57,7 @@ body {
   padding: 10px;
   display: flex;
   flex-direction: column;
-  height: calc(100%-70px);
+  height: calc(100% - 70px);
 }
 
 input,
@@ -122,12 +120,12 @@ button:hover {
 }
 
 #profile-btn {
-  float: right;
   padding: 5px 10px;
   background-color: #36bd0e;
   color: white;
   border: none;
   cursor: pointer;
+  margin-left: 10px; /* Ensure the button is not floated and spaced correctly */
 }
 
 #profile-info {
@@ -198,51 +196,20 @@ button:hover {
   width: 100%;
 }
 
-#message-input {
-  width: 80%;
+#file-icon {
+  width: 24px;
+  height: 24px;
   margin-right: 10px;
 }
-#send-btn {
-  position: sticky;
-}
 
-#search-section {
-  position: sticky;
-  top: 0;
-  width: 350px;
-  height: 100vh;
-  overflow-y: auto;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-#chat-section {
-  flex: 1; /* Takes remaining space */
-  margin-left: 20px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-#send-messages {
-  position: sticky;
-  bottom: 0;
-  background-color: white;
-  padding: 10px;
-  border-top: 1px solid #ccc;
-  width: 100%;
-}
-
-#message-input,
-#send-btn {
+#message-input {
   flex: 1;
-  position: sticky;
+  margin-right: 10px;
 }
 
 #send-btn {
-  margin-left: 10px;
+  position: relative;
+  margin-left: 10px; /* Ensure proper spacing */
 }
 
 #profile-name,

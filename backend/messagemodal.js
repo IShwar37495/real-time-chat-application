@@ -7,6 +7,10 @@ const messageSchema = new Schema(
       type: String,
     },
 
+    file: {
+      type: String,
+    },
+
     sender: {
       type: Schema.Types.ObjectId,
       ref: "Userdetail",
